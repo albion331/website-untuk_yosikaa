@@ -1,0 +1,745 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Playlist - Yosika's Page</title>
+    <style>
+        @font-face {
+            font-family: 'Monument Extended';
+            src: url('./fonts/MonumentExtended-Regular.otf') format('opentype');
+            font-weight: normal;
+            font-style: normal;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background-color: #1a1b26;
+            font-family: 'Monument Extended', monospace;
+            min-height: 100vh;
+            color: white;
+            overflow-x: hidden;
+        }
+
+        /* Stars background */
+        .stars {
+            position: fixed;
+            width: 1px;
+            height: 1px;
+            background: white;
+            z-index: 1;
+        }
+
+        .container {
+            position: relative;
+            z-index: 2;
+            padding: 2rem;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .title {
+            font-size: 3rem;
+            color: #fda4af;
+            text-shadow: 2px 2px 0px #fb7185;
+            margin: 2rem 0 0.5rem 0;
+            letter-spacing: 4px;
+            text-align: center;
+        }
+
+        .subtitle {
+            font-size: 1.2rem;
+            color: rgba(253, 164, 175, 0.7);
+            text-align: center;
+            margin-bottom: 2rem;
+            font-style: italic;
+        }
+
+        .playlist-container {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 16px;
+            padding: 2rem;
+            backdrop-filter: blur(10px);
+            border: 2px solid rgba(253, 164, 175, 0.3);
+        }
+
+        .song-item {
+            display: flex;
+            align-items: center;
+            padding: 1rem;
+            margin: 1rem 0;
+            background: rgba(253, 164, 175, 0.1);
+            border-radius: 12px;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            gap: 1rem;
+        }
+
+        .song-item:hover {
+            background: rgba(253, 164, 175, 0.2);
+            transform: translateX(10px);
+        }
+
+        .song-item.playing {
+            background: rgba(253, 164, 175, 0.3);
+        }
+
+        .song-cover {
+            width: 60px;
+            height: 60px;
+            border-radius: 8px;
+            object-fit: cover;
+            background: rgba(253, 164, 175, 0.2);
+        }
+
+        .song-number {
+            font-size: 1.5rem;
+            color: #fda4af;
+            margin-right: 1.5rem;
+            min-width: 40px;
+        }
+
+        .song-info {
+            flex-grow: 1;
+        }
+
+        .song-title {
+            font-size: 1.2rem;
+            color: #fda4af;
+            margin-bottom: 0.5rem;
+        }
+
+        .song-artist {
+            font-size: 0.9rem;
+            color: rgba(253, 164, 175, 0.7);
+        }
+
+        .play-btn {
+            background: none;
+            border: none;
+            color: #fda4af;
+            cursor: pointer;
+            padding: 0.5rem;
+            font-size: 1.5rem;
+            transition: all 0.3s ease;
+        }
+
+        .play-btn:hover {
+            transform: scale(1.2);
+        }
+
+        .now-playing {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: rgba(26, 27, 38, 0.95);
+            padding: 2rem;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            backdrop-filter: blur(10px);
+            border-top: 2px solid rgba(253, 164, 175, 0.3);
+            transform: translateY(100%);
+            transition: transform 0.3s ease;
+            z-index: 1000;
+        }
+
+        .now-playing.active {
+            transform: translateY(0);
+        }
+
+        .close-now-playing {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            background: none;
+            border: none;
+            color: #fda4af;
+            font-size: 1.5rem;
+            cursor: pointer;
+            padding: 0.5rem;
+            transition: all 0.3s ease;
+        }
+
+        .close-now-playing:hover {
+            transform: scale(1.2);
+            color: #fb7185;
+        }
+
+        .now-playing-cover {
+            width: 200px;
+            height: 200px;
+            border-radius: 16px;
+            object-fit: cover;
+            margin-bottom: 1rem;
+            box-shadow: 0 4px 20px rgba(253, 164, 175, 0.3);
+        }
+
+        .now-playing-info {
+            text-align: center;
+            margin-bottom: 1.5rem;
+        }
+
+        .now-playing-title {
+            color: #fda4af;
+            font-size: 1.5rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .now-playing-artist {
+            color: rgba(253, 164, 175, 0.7);
+            font-size: 1.1rem;
+        }
+
+        .controls {
+            display: flex;
+            align-items: center;
+            gap: 2rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .control-btn {
+            background: none;
+            border: none;
+            color: #fda4af;
+            cursor: pointer;
+            font-size: 2rem;
+            transition: all 0.3s ease;
+            padding: 0.5rem;
+        }
+
+        .play-pause-btn {
+            font-size: 3rem;
+        }
+
+        .control-btn:hover {
+            transform: scale(1.2);
+            color: #fb7185;
+        }
+
+        .progress-container {
+            width: 100%;
+            max-width: 500px;
+            margin: 0 auto;
+            cursor: pointer;
+        }
+
+        .progress-bar {
+            height: 4px;
+            background: #fda4af;
+            width: 0;
+            transition: width 0.1s linear;
+            border-radius: 2px;
+        }
+
+        .time-info {
+            display: flex;
+            justify-content: space-between;
+            color: rgba(253, 164, 175, 0.7);
+            font-size: 0.8rem;
+            margin-top: 0.5rem;
+        }
+
+        .volume-container {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-top: 1rem;
+        }
+
+        .volume-slider {
+            -webkit-appearance: none;
+            width: 100px;
+            height: 4px;
+            border-radius: 2px;
+            background: rgba(253, 164, 175, 0.3);
+            outline: none;
+        }
+
+        .volume-slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: #fda4af;
+            cursor: pointer;
+        }
+
+        .back-btn {
+            position: fixed;
+            top: 2rem;
+            left: 2rem;
+            background: none;
+            border: 2px solid #fda4af;
+            color: #fda4af;
+            padding: 0.5rem 1rem;
+            cursor: pointer;
+            border-radius: 8px;
+            font-family: 'Monument Extended', monospace;
+            transition: all 0.3s ease;
+            z-index: 1001;
+        }
+
+        .back-btn:hover {
+            background: #fda4af;
+            color: white;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+            100% { transform: scale(1); }
+        }
+
+        .playing .play-btn {
+            animation: pulse 1s infinite;
+            color: #fb7185;
+        }
+
+        .add-song-btn {
+            background: rgba(253, 164, 175, 0.2);
+            border: 2px dashed #fda4af;
+            color: #fda4af;
+            padding: 1rem;
+            border-radius: 12px;
+            cursor: pointer;
+            text-align: center;
+            margin-top: 1rem;
+            transition: all 0.3s ease;
+        }
+
+        .add-song-btn:hover {
+            background: rgba(253, 164, 175, 0.3);
+            transform: translateY(-2px);
+        }
+
+        .add-song-form {
+            display: none;
+            background: rgba(26, 27, 38, 0.95);
+            padding: 2rem;
+            border-radius: 12px;
+            margin-top: 1rem;
+            backdrop-filter: blur(10px);
+        }
+
+        .add-song-form.active {
+            display: block;
+        }
+
+        .form-group {
+            margin-bottom: 1rem;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            color: #fda4af;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 0.5rem;
+            border: 1px solid rgba(253, 164, 175, 0.3);
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            border-radius: 4px;
+        }
+
+        .form-actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+
+        .form-btn {
+            padding: 0.5rem 1rem;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .submit-btn {
+            background: #fda4af;
+            color: white;
+        }
+
+        .cancel-btn {
+            background: rgba(253, 164, 175, 0.2);
+            color: #fda4af;
+        }
+
+        .form-btn:hover {
+            transform: translateY(-2px);
+        }
+    </style>
+</head>
+<body>
+    <!-- Stars background -->
+    <div id="stars-container"></div>
+
+    <div class="container">
+        <button class="back-btn" onclick="window.location.href='index.html'">← Kembali</button>
+        <h1 class="title">PLAYLIST</h1>
+        <p class="subtitle">some good song for yosika</p>
+        
+        <div class="playlist-container">
+            <!-- Lagu-lagu akan ditambahkan di sini melalui JavaScript -->
+        </div>
+        <div class="add-song-btn" id="add-song-btn">+ Tambah Lagu</div>
+        <div class="add-song-form" id="add-song-form">
+            <div class="form-group">
+                <label for="song-title">Judul Lagu</label>
+                <input type="text" id="song-title" required>
+            </div>
+            <div class="form-group">
+                <label for="song-artist">Artis</label>
+                <input type="text" id="song-artist" required>
+            </div>
+            <div class="form-group">
+                <label for="song-file">File Audio</label>
+                <input type="file" id="song-file" accept="audio/*" required>
+            </div>
+            <div class="form-group">
+                <label for="song-cover">Cover Album</label>
+                <input type="file" id="song-cover" accept="image/*" required>
+            </div>
+            <div class="form-actions">
+                <button class="form-btn cancel-btn" id="cancel-btn">Batal</button>
+                <button class="form-btn submit-btn" id="submit-btn">Tambah</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="now-playing">
+        <button class="close-now-playing" id="close-now-playing">✕</button>
+        <img src="" alt="" class="now-playing-cover">
+        <div class="now-playing-info">
+            <div class="now-playing-title"></div>
+            <div class="now-playing-artist"></div>
+        </div>
+        <div class="controls">
+            <button class="control-btn" id="prev-btn">⏮</button>
+            <button class="control-btn play-pause-btn" id="play-pause-btn">⏯</button>
+            <button class="control-btn" id="next-btn">⏭</button>
+        </div>
+        <div class="volume-container">
+            <span class="control-btn">🔊</span>
+            <input type="range" class="volume-slider" min="0" max="100" value="100">
+        </div>
+        <div class="progress-container">
+            <div class="progress-bar"></div>
+            <div class="time-info">
+                <span class="current-time">0:00</span>
+                <span class="duration">0:00</span>
+            </div>
+        </div>
+    </div>
+
+    <audio id="audio-player"></audio>
+
+    <script>
+        // Membuat background bintang
+        const starsContainer = document.getElementById('stars-container');
+        for (let i = 0; i < 100; i++) {
+            const star = document.createElement('div');
+            star.className = 'stars';
+            star.style.left = `${Math.random() * 100}%`;
+            star.style.top = `${Math.random() * 100}%`;
+            star.style.animation = `twinkle ${Math.random() * 3 + 1}s infinite`;
+            starsContainer.appendChild(star);
+        }
+
+        // Daftar lagu
+        const playlist = [
+            {
+                title: "Sempurna",
+                artist: "Andra And The Backbone",
+                file: "music/Andra And The Backbone - Sempurna.mp3",
+                cover: "music/covers/sempurna.jpg"
+            },
+            {
+                title: "Penjaga Hati",
+                artist: "Nadhif Basalamah",
+                file: "music/nadhif basalamah - penjaga hati.mp3",
+                cover: "music/covers/penjaga hati.jpg"
+            },
+            {
+                title: "Her",
+                artist: "JVKE",
+                file: "music/JVKE - her.mp3",
+                cover: "music/covers/jvke-her.jpg"
+            },
+            {
+                title: "My Love Mine All Mine",
+                artist: "Mitski",
+                file: "music/Mitski - My Love Mine All Mine.mp3",
+                cover: "music/covers/mitski.jpg"
+            },
+            {
+                title: "Love (70s Remix)",
+                artist: "Kendrick Lamar",
+                file: "music/kendrick lamar - love (70s remix).mp3",
+                cover: "music/covers/kendrick lamar love 70s.jpg"
+            }
+        ];
+
+        // Audio player setup
+        const audioPlayer = document.getElementById('audio-player');
+        const playPauseBtn = document.getElementById('play-pause-btn');
+        const prevBtn = document.getElementById('prev-btn');
+        const nextBtn = document.getElementById('next-btn');
+        const progressBar = document.querySelector('.progress-bar');
+        const progressContainer = document.querySelector('.progress-container');
+        const currentTimeSpan = document.querySelector('.current-time');
+        const durationSpan = document.querySelector('.duration');
+        const volumeSlider = document.querySelector('.volume-slider');
+        const nowPlaying = document.querySelector('.now-playing');
+        let currentSongIndex = 0;
+        let isPlaying = false;
+
+        // Render playlist
+        const playlistContainer = document.querySelector('.playlist-container');
+        playlist.forEach((song, index) => {
+            const songItem = document.createElement('div');
+            songItem.className = 'song-item';
+            songItem.innerHTML = `
+                <img src="${song.cover}" alt="${song.title}" class="song-cover" onerror="this.src='music/covers/default.jpg'">
+                <div class="song-number">${index + 1}</div>
+                <div class="song-info">
+                    <div class="song-title">${song.title}</div>
+                    <div class="song-artist">${song.artist}</div>
+                </div>
+                <button class="play-btn">▶</button>
+            `;
+            songItem.addEventListener('click', () => playSong(index));
+            playlistContainer.appendChild(songItem);
+        });
+
+        // Fungsi untuk memformat waktu
+        function formatTime(seconds) {
+            const minutes = Math.floor(seconds / 60);
+            const remainingSeconds = Math.floor(seconds % 60);
+            return `${minutes}:${remainingSeconds.toString().padStart(2, '0')}`;
+        }
+
+        // Fungsi untuk memutar lagu
+        function playSong(index) {
+            try {
+                currentSongIndex = index;
+                const song = playlist[currentSongIndex];
+                
+                // Cek apakah file audio ada
+                const audio = new Audio(song.file);
+                audio.onerror = () => {
+                    console.error('Error loading audio file:', song.file);
+                    alert('File audio tidak ditemukan. Silakan periksa path file.');
+                };
+                
+                audio.oncanplaythrough = () => {
+                    audioPlayer.src = song.file;
+                    audioPlayer.play();
+                    isPlaying = true;
+                    updatePlayingStatus();
+                    nowPlaying.classList.add('active');
+                    updateNowPlayingInfo();
+                };
+                
+                audio.load();
+            } catch (error) {
+                console.error('Error:', error);
+                alert('Terjadi kesalahan saat memutar lagu.');
+            }
+        }
+
+        // Update status pemutaran
+        function updatePlayingStatus() {
+            playPauseBtn.textContent = isPlaying ? "⏸" : "▶";
+            document.querySelectorAll('.song-item').forEach((item, index) => {
+                item.classList.toggle('playing', index === currentSongIndex && isPlaying);
+            });
+        }
+
+        // Update informasi now playing
+        function updateNowPlayingInfo() {
+            try {
+                const song = playlist[currentSongIndex];
+                const coverImg = document.querySelector('.now-playing-cover');
+                
+                // Set cover image
+                coverImg.src = song.cover;
+                coverImg.onerror = () => {
+                    coverImg.src = 'music/covers/default.jpg';
+                };
+                
+                document.querySelector('.now-playing-title').textContent = song.title;
+                document.querySelector('.now-playing-artist').textContent = song.artist;
+            } catch (error) {
+                console.error('Error:', error);
+            }
+        }
+
+        // Event listeners
+        playPauseBtn.addEventListener('click', () => {
+            if (audioPlayer.src) {
+                if (isPlaying) {
+                    audioPlayer.pause();
+                } else {
+                    audioPlayer.play();
+                }
+                isPlaying = !isPlaying;
+                updatePlayingStatus();
+            }
+        });
+
+        prevBtn.addEventListener('click', () => {
+            if (currentSongIndex > 0) {
+                playSong(currentSongIndex - 1);
+            }
+        });
+
+        nextBtn.addEventListener('click', () => {
+            if (currentSongIndex < playlist.length - 1) {
+                playSong(currentSongIndex + 1);
+            }
+        });
+
+        // Progress bar
+        audioPlayer.addEventListener('timeupdate', () => {
+            const progress = (audioPlayer.currentTime / audioPlayer.duration) * 100;
+            progressBar.style.width = `${progress}%`;
+            currentTimeSpan.textContent = formatTime(audioPlayer.currentTime);
+        });
+
+        audioPlayer.addEventListener('loadedmetadata', () => {
+            durationSpan.textContent = formatTime(audioPlayer.duration);
+        });
+
+        progressContainer.addEventListener('click', (e) => {
+            const clickPosition = (e.offsetX / progressContainer.offsetWidth);
+            audioPlayer.currentTime = clickPosition * audioPlayer.duration;
+        });
+
+        // Volume control
+        volumeSlider.addEventListener('input', (e) => {
+            audioPlayer.volume = e.target.value / 100;
+        });
+
+        // Auto-play next song
+        audioPlayer.addEventListener('ended', () => {
+            if (currentSongIndex < playlist.length - 1) {
+                playSong(currentSongIndex + 1);
+            } else {
+                isPlaying = false;
+                updatePlayingStatus();
+            }
+        });
+
+        // Form handling
+        const addSongBtn = document.getElementById('add-song-btn');
+        const addSongForm = document.getElementById('add-song-form');
+        const cancelBtn = document.getElementById('cancel-btn');
+        const submitBtn = document.getElementById('submit-btn');
+
+        addSongBtn.addEventListener('click', () => {
+            addSongForm.classList.add('active');
+        });
+
+        cancelBtn.addEventListener('click', () => {
+            addSongForm.classList.remove('active');
+        });
+
+        submitBtn.addEventListener('click', async function(e) {
+            e.preventDefault();
+            
+            const title = document.getElementById('song-title').value;
+            const artist = document.getElementById('song-artist').value;
+            const audioFile = document.getElementById('song-file').files[0];
+            const coverFile = document.getElementById('song-cover').files[0];
+            
+            if (!title || !artist || !audioFile) {
+                alert('Harap isi semua field yang diperlukan');
+                return;
+            }
+            
+            try {
+                // Upload file audio
+                const audioPath = `music/${audioFile.name}`;
+                const audioBlob = new Blob([await audioFile.arrayBuffer()], { type: audioFile.type });
+                const audioUrl = URL.createObjectURL(audioBlob);
+                
+                // Upload file cover jika ada
+                let coverPath = 'music/covers/default.jpg';
+                let coverUrl = coverPath;
+                if (coverFile) {
+                    coverPath = `music/covers/${coverFile.name}`;
+                    const coverBlob = new Blob([await coverFile.arrayBuffer()], { type: coverFile.type });
+                    coverUrl = URL.createObjectURL(coverBlob);
+                }
+                
+                // Tambahkan lagu baru ke playlist
+                playlist.push({
+                    title,
+                    artist,
+                    file: audioUrl,
+                    cover: coverUrl
+                });
+                
+                // Render ulang playlist
+                renderPlaylist();
+                
+                // Reset form
+                document.getElementById('song-title').value = '';
+                document.getElementById('song-artist').value = '';
+                document.getElementById('song-file').value = '';
+                document.getElementById('song-cover').value = '';
+                addSongForm.classList.remove('active');
+                
+                alert('Lagu berhasil ditambahkan!');
+            } catch (error) {
+                console.error('Error:', error);
+                alert('Terjadi kesalahan saat menambahkan lagu.');
+            }
+        });
+
+        // Fungsi untuk merender playlist
+        function renderPlaylist() {
+            playlistContainer.innerHTML = '';
+            playlist.forEach((song, index) => {
+                const songItem = document.createElement('div');
+                songItem.className = 'song-item';
+                songItem.innerHTML = `
+                    <img src="${song.cover}" alt="${song.title}" class="song-cover" onerror="this.src='music/covers/default.jpg'">
+                    <div class="song-number">${index + 1}</div>
+                    <div class="song-info">
+                        <div class="song-title">${song.title}</div>
+                        <div class="song-artist">${song.artist}</div>
+                    </div>
+                    <button class="play-btn">▶</button>
+                `;
+                songItem.addEventListener('click', () => playSong(index));
+                playlistContainer.appendChild(songItem);
+            });
+        }
+
+        // Render playlist saat halaman dimuat
+        renderPlaylist();
+
+        const closeNowPlayingBtn = document.getElementById('close-now-playing');
+        
+        closeNowPlayingBtn.addEventListener('click', () => {
+            nowPlaying.classList.remove('active');
+            audioPlayer.pause();
+            isPlaying = false;
+            updatePlayingStatus();
+        });
+    </script>
+</body>
+</html>

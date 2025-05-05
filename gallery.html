@@ -1,0 +1,514 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Galeri - Yosika's Page</title>
+    <style>
+        @font-face {
+            font-family: 'Monument Extended';
+            src: url('./fonts/MonumentExtended-Regular.otf') format('opentype');
+            font-weight: normal;
+            font-style: normal;
+            font-display: swap;
+        }
+        @font-face {
+            font-family: 'Monument Extended';
+            src: url('./fonts/MonumentExtended-Ultrabold.otf') format('opentype');
+            font-weight: bold;
+            font-style: normal;
+            font-display: swap;
+        }
+        @font-face {
+            font-family: 'Helvetica';
+            src: url('./fonts/Helvetica.ttf') format('truetype');
+            font-weight: normal;
+            font-style: normal;
+            font-display: swap;
+        }
+        @font-face {
+            font-family: 'Helvetica';
+            src: url('./fonts/Helvetica-Bold.ttf') format('truetype');
+            font-weight: bold;
+            font-style: normal;
+            font-display: swap;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Helvetica', Arial, sans-serif;
+            min-height: 100vh;
+            background: linear-gradient(to bottom, #fff1f2, #ffe4e6);
+            padding: 2rem;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 3rem;
+        }
+
+        .title-container {
+            background-color: rgba(255, 255, 255, 0.5);
+            backdrop-filter: blur(4px);
+            border-radius: 9999px;
+            padding: 1rem;
+            display: inline-block;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+
+        h1 {
+            font-family: 'Monument Extended', 'Arial Black', sans-serif;
+            font-size: 3rem;
+            font-weight: bold;
+            color: #fb7185;
+        }
+
+        .subtitle {
+            font-size: 1.25rem;
+            color: #fda4af;
+            margin-top: 1rem;
+        }
+
+        .gallery-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 2rem;
+            padding: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        .gallery-section {
+            display: none;
+            animation: fadeIn 0.5s ease-in-out;
+        }
+
+        .gallery-section.active {
+            display: grid;
+        }
+
+        .section-title {
+            font-family: 'Monument Extended', 'Arial Black', sans-serif;
+            font-size: 2rem;
+            color: #fb7185;
+            text-align: center;
+            margin-bottom: 2rem;
+            grid-column: 1 / -1;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .navigation-buttons {
+            display: flex;
+            justify-content: center;
+            gap: 1rem;
+            margin: 2rem 0;
+        }
+
+        .nav-button {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 9999px;
+            padding: 0.75rem 1.5rem;
+            font-size: 1rem;
+            font-weight: 500;
+            color: white;
+            background-color: #fda4af;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            cursor: pointer;
+            border: none;
+        }
+
+        .nav-button:hover {
+            background-color: #fb7185;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+        }
+
+        .nav-button:disabled {
+            background-color: #fecdd3;
+            cursor: not-allowed;
+        }
+
+        .section-indicator {
+            display: flex;
+            justify-content: center;
+            gap: 0.5rem;
+            margin: 1rem 0;
+        }
+
+        .indicator-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background-color: #fecdd3;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .indicator-dot.active {
+            background-color: #fb7185;
+            transform: scale(1.2);
+        }
+
+        .polaroid {
+            background: white;
+            padding: 1rem;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            transform: rotate(-2deg);
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .polaroid:hover {
+            transform: rotate(0deg) scale(1.05);
+        }
+
+        .polaroid img {
+            width: 100%;
+            height: 200px;
+            object-fit: cover;
+            filter: sepia(30%) contrast(120%);
+        }
+
+        .polaroid-caption {
+            text-align: center;
+            font-family: 'Helvetica', Arial, sans-serif;
+            color: #666;
+            margin-top: 1rem;
+            font-size: 0.9rem;
+        }
+
+        .back-button {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 9999px;
+            padding: 1rem 2rem;
+            font-size: 1.125rem;
+            font-weight: 500;
+            color: white;
+            background-color: #fda4af;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            margin: 2rem auto;
+            display: block;
+            width: fit-content;
+        }
+
+        .back-button:hover {
+            background-color: #fb7185;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.9);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal-content {
+            max-width: 90%;
+            max-height: 90%;
+        }
+
+        .modal-content img {
+            width: 100%;
+            height: auto;
+            max-height: 90vh;
+            object-fit: contain;
+        }
+
+        .close-modal {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            color: white;
+            font-size: 2rem;
+            cursor: pointer;
+        }
+
+        /* Tambahkan style untuk under construction */
+        .under-construction {
+            grid-column: 1 / -1;
+            text-align: center;
+            padding: 4rem;
+            background-color: rgba(255, 255, 255, 0.7);
+            border-radius: 1rem;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+
+        .under-construction p {
+            font-size: 1.5rem;
+            color: #fb7185;
+            margin-bottom: 1rem;
+        }
+
+        .under-construction p:last-child {
+            font-size: 1.2rem;
+            color: #fda4af;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <div class="title-container">
+                <h1>Galeri Kenangan</h1>
+            </div>
+            <p class="subtitle">Momen-momen spesial kita ❤️</p>
+        </header>
+
+        <div class="gallery-grid">
+            <!-- Section 1 -->
+            <div class="gallery-section active">
+                <h2 class="section-title">First Meet</h2>
+                <!-- Polaroid 1 -->
+                <div class="polaroid">
+                    <img src="gallery/IMG-20250418-WA0047.jpg" alt="Kenangan 1">
+                    <div class="polaroid-caption">Ketemuan pertama kali ya</div>
+                </div>
+
+                <!-- Polaroid 2 -->
+                <div class="polaroid">
+                    <img src="gallery/IMG-20250418-WA0064.jpg" alt="Kenangan 2">
+                    <div class="polaroid-caption">kak jes lucu banget</div>
+                </div>
+
+                <!-- Polaroid 3 -->
+                <div class="polaroid">
+                    <img src="gallery/IMG-20250418-WA0067.jpg" alt="Kenangan 3">
+                    <div class="polaroid-caption">Tatapan maut hahaha</div>
+                </div>
+
+                <!-- Polaroid 4 -->
+                <div class="polaroid">
+                    <img src="gallery/IMG-20250418-WA0071.jpg" alt="Kenangan 4">
+                    <div class="polaroid-caption">Ini gaya nya mau melet terus?</div>
+                </div>
+
+                <!-- Polaroid 5 -->
+                <div class="polaroid">
+                    <img src="gallery/IMG-20250418-WA0083.jpg" alt="Kenangan 5">
+                    <div class="polaroid-caption">West side, sheeesh</div>
+                </div>
+
+                <!-- Polaroid 6 -->
+                <div class="polaroid">
+                    <img src="gallery/IMG-20250505-WA0007.jpg" alt="Kenangan 6">
+                    <div class="polaroid-caption">kak jes 2 cute</div>
+                </div>
+            </div>
+
+            <!-- Section 2 -->
+            <div class="gallery-section">
+                <h2 class="section-title">Yap, ini ketemuan kita yang kedua</h2>
+                <!-- Polaroid 7 -->
+                <div class="polaroid">
+                    <img src="gallery/m2-1.jpg" alt="Kenangan 7">
+                    <div class="polaroid-caption">Hore kita ketemu lagi</div>
+                </div>
+
+                <!-- Polaroid 8 -->
+                <div class="polaroid">
+                    <img src="gallery/m2-2.jpg.jpg" alt="Kenangan 8">
+                    <div class="polaroid-caption">Lagi lagi gaya melet andalan</div>
+                </div>
+
+                <!-- Polaroid 9 -->
+                <div class="polaroid">
+                    <img src="gallery/m2-3.jpg" alt="Kenangan 9">
+                    <div class="polaroid-caption">Bang dit senyumnya kek villain banget ya?</div>
+                </div>
+
+                <!-- Polaroid 10 -->
+                <div class="polaroid">
+                    <img src="gallery/m2-4.jpg" alt="Kenangan 10">
+                    <div class="polaroid-caption">Rock n Roll Shii</div>
+                </div>
+
+                <!-- Polaroid 11 -->
+                <div class="polaroid">
+                    <img src="gallery/m2-5.jpg" alt="Kenangan 11">
+                    <div class="polaroid-caption">Bricks yang tidak selesai di pertemuan pertama wkwkwk</div>
+                </div>
+
+                <!-- Polaroid 12 -->
+                <div class="polaroid">
+                    <img src="gallery/m2-6.jpg" alt="Kenangan 12">
+                    <div class="polaroid-caption">Bang dit nopang dagu Kak Jes</div>
+                </div>
+            </div>
+
+            <!-- Section 3 -->
+            <div class="gallery-section">
+                <h2 class="section-title">Kajesss pict</h2>
+                <!-- Polaroid 13 -->
+                <div class="polaroid">
+                    <img src="gallery/kajes1.jpg" alt="Kenangan 13">
+                    <div class="polaroid-caption">Kajesss</div>
+                </div>
+
+                <!-- Polaroid 14 -->
+                <div class="polaroid">
+                    <img src="gallery/kajes2.jpg" alt="Kenangan 14">
+                    <div class="polaroid-caption">Bercermin tapi gegayaan</div>
+                </div>
+
+                <!-- Polaroid 15 -->
+                <div class="polaroid">
+                    <img src="gallery/kajes3.jpg" alt="Kenangan 15">
+                    <div class="polaroid-caption">Lucu banget gaya pinguin</div>
+                </div>
+
+                <!-- Polaroid 16 -->
+                <div class="polaroid">
+                    <img src="gallery/kajes4.jpg" alt="Kenangan 16">
+                    <div class="polaroid-caption">Outdoor dulu ya kan</div>
+                </div>
+
+                <!-- Polaroid 17 -->
+                <div class="polaroid">
+                    <img src="gallery/kajes5.jpg" alt="Kenangan 17">
+                    <div class="polaroid-caption">Kajesss melet lagi</div>
+                </div>
+
+                <!-- Polaroid 18 -->
+                <div class="polaroid">
+                    <img src="gallery/kajes6.jpg" alt="Kenangan 18">
+                    <div class="polaroid-caption">Cantik banget woi</div>
+                </div>
+            </div>
+
+            <!-- Section 4 -->
+            <div class="gallery-section">
+                <h2 class="section-title">Coming Soon</h2>
+                <div class="under-construction">
+                    <p>Under construction, karena kitaa belum foto lagi hehe</p>
+                    <p>Stay tuned ya sayang</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="section-indicator">
+            <div class="indicator-dot active" data-section="0"></div>
+            <div class="indicator-dot" data-section="1"></div>
+            <div class="indicator-dot" data-section="2"></div>
+            <div class="indicator-dot" data-section="3"></div>
+        </div>
+
+        <div class="navigation-buttons">
+            <button class="nav-button" id="prevButton" disabled>Sebelumnya</button>
+            <button class="nav-button" id="nextButton">Selanjutnya</button>
+        </div>
+
+        <a href="index.html" class="back-button">Kembali ke Beranda</a>
+
+        <!-- Modal untuk gambar -->
+        <div class="modal" id="imageModal">
+            <span class="close-modal">&times;</span>
+            <div class="modal-content">
+                <img id="modalImage" src="" alt="Gambar">
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Fungsi untuk membuka modal
+        document.querySelectorAll('.polaroid').forEach(polaroid => {
+            polaroid.addEventListener('click', function() {
+                const img = this.querySelector('img');
+                const modal = document.getElementById('imageModal');
+                const modalImg = document.getElementById('modalImage');
+                
+                modal.style.display = 'flex';
+                modalImg.src = img.src;
+            });
+        });
+
+        // Fungsi untuk menutup modal
+        document.querySelector('.close-modal').addEventListener('click', function() {
+            document.getElementById('imageModal').style.display = 'none';
+        });
+
+        // Tutup modal saat mengklik di luar gambar
+        window.addEventListener('click', function(event) {
+            const modal = document.getElementById('imageModal');
+            if (event.target === modal) {
+                modal.style.display = 'none';
+            }
+        });
+
+        // Navigasi galeri
+        const sections = document.querySelectorAll('.gallery-section');
+        const dots = document.querySelectorAll('.indicator-dot');
+        const prevButton = document.getElementById('prevButton');
+        const nextButton = document.getElementById('nextButton');
+        let currentSection = 0;
+
+        function updateNavigation() {
+            // Update tombol navigasi
+            prevButton.disabled = currentSection === 0;
+            nextButton.disabled = currentSection === sections.length - 1;
+
+            // Update section yang aktif
+            sections.forEach((section, index) => {
+                section.classList.toggle('active', index === currentSection);
+            });
+
+            // Update indikator dot
+            dots.forEach((dot, index) => {
+                dot.classList.toggle('active', index === currentSection);
+            });
+        }
+
+        // Event listener untuk tombol navigasi
+        prevButton.addEventListener('click', () => {
+            if (currentSection > 0) {
+                currentSection--;
+                updateNavigation();
+            }
+        });
+
+        nextButton.addEventListener('click', () => {
+            if (currentSection < sections.length - 1) {
+                currentSection++;
+                updateNavigation();
+            }
+        });
+
+        // Event listener untuk indikator dot
+        dots.forEach((dot, index) => {
+            dot.addEventListener('click', () => {
+                currentSection = index;
+                updateNavigation();
+            });
+        });
+
+        // Inisialisasi navigasi
+        updateNavigation();
+    </script>
+</body>
+</html> 

@@ -1,0 +1,753 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Photobox - Yosika's Page</title>
+    <style>
+        @font-face {
+            font-family: 'Monument Extended';
+            src: url('./fonts/MonumentExtended-Regular.otf') format('opentype');
+            font-weight: normal;
+            font-style: normal;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background-color: #1a1b26;
+            font-family: 'Monument Extended', monospace;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            color: white;
+            overflow: hidden;
+            position: relative;
+        }
+
+        /* Stars background */
+        .stars {
+            position: fixed;
+            width: 1px;
+            height: 1px;
+            background: white;
+            z-index: 1;
+        }
+
+        .container {
+            position: relative;
+            z-index: 2;
+            text-align: center;
+            padding: 2rem;
+            width: 100%;
+            max-width: 800px;
+        }
+
+        .title {
+            font-size: 3rem;
+            color: #fda4af;
+            text-shadow: 2px 2px 0px #fb7185;
+            margin: 2rem 0;
+            letter-spacing: 4px;
+        }
+
+        .camera-frame {
+            width: 100%;
+            max-width: 640px;
+            height: 480px;
+            margin: 2rem auto;
+            border: 4px solid #fda4af;
+            position: relative;
+            overflow: hidden;
+            background: #000;
+        }
+
+        #camera-feed {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .capture-btn {
+            background: #fda4af;
+            color: white;
+            border: none;
+            padding: 1rem 2rem;
+            font-size: 1.5rem;
+            font-family: 'Monument Extended', monospace;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin: 1rem;
+            border-radius: 8px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+
+        .capture-btn:hover {
+            background: #fb7185;
+            transform: scale(1.05);
+        }
+
+        .flash {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: white;
+            opacity: 0;
+            pointer-events: none;
+            z-index: 999;
+        }
+
+        .flash.active {
+            animation: flash 0.5s ease-out;
+        }
+
+        @keyframes flash {
+            0% { opacity: 0; }
+            50% { opacity: 1; }
+            100% { opacity: 0; }
+        }
+
+        .polaroid-container {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            z-index: 1000;
+            perspective: 1000px;
+        }
+
+        .polaroid-container.active {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .polaroid-frame {
+            width: 300px;
+            background: white;
+            padding: 20px 20px 60px 20px;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.3);
+            cursor: move;
+            position: absolute;
+            transform-origin: center;
+            transition: transform 0.3s ease;
+            opacity: 0;
+            transform: translateY(20px);
+        }
+
+        .polaroid-frame img {
+            width: 100%;
+            display: block;
+            margin-bottom: 15px;
+        }
+
+        .polaroid-frame p {
+            text-align: center;
+            color: #333;
+            font-family: 'Monument Extended', cursive;
+            font-size: 14px;
+        }
+
+        .frame-1 { transform: rotate(-5deg) translateY(-10px); }
+        .frame-2 { transform: rotate(3deg) translateX(10px); }
+        .frame-3 { transform: rotate(-2deg) translateX(-10px); }
+        .frame-4 { transform: rotate(4deg) translateY(10px); }
+
+        .back-btn {
+            position: fixed;
+            top: 2rem;
+            left: 2rem;
+            background: none;
+            border: 2px solid #fda4af;
+            color: #fda4af;
+            padding: 0.5rem 1rem;
+            cursor: pointer;
+            border-radius: 8px;
+            font-family: 'Monument Extended', monospace;
+            transition: all 0.3s ease;
+            z-index: 1001;
+        }
+
+        .back-btn:hover {
+            background: #fda4af;
+            color: white;
+        }
+
+        #countdown {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 8rem;
+            color: #fda4af;
+            display: none;
+            z-index: 10;
+        }
+
+        .drag-instruction {
+            position: fixed;
+            bottom: 2rem;
+            left: 50%;
+            transform: translateX(-50%);
+            color: #fda4af;
+            font-size: 1.2rem;
+            text-align: center;
+            z-index: 1001;
+            opacity: 0;
+            transition: opacity 0.5s ease;
+        }
+
+        .drag-instruction.active {
+            opacity: 1;
+        }
+
+        /* Animasi proses cetak */
+        .printing-animation {
+            display: none;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            text-align: center;
+            z-index: 1002;
+            color: #fda4af;
+        }
+
+        .printing-animation.active {
+            display: block;
+        }
+
+        .printer {
+            width: 200px;
+            height: 60px;
+            background: #fda4af;
+            border-radius: 10px;
+            position: relative;
+            margin-bottom: 20px;
+        }
+
+        .printer::after {
+            content: '';
+            position: absolute;
+            bottom: -20px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 180px;
+            height: 4px;
+            background: #fda4af;
+            animation: printLine 2s linear infinite;
+        }
+
+        @keyframes printLine {
+            0% { width: 0; }
+            50% { width: 180px; }
+            100% { width: 0; }
+        }
+
+        .printing-text {
+            margin-top: 40px;
+            font-size: 1.5rem;
+            animation: blink 1s infinite;
+        }
+
+        @keyframes blink {
+            50% { opacity: 0.5; }
+        }
+
+        .polaroid-frame.show {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        /* Tombol aksi setelah foto */
+        .action-buttons {
+            position: fixed;
+            bottom: 2rem;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 1002;
+            display: none;
+            gap: 1rem;
+        }
+
+        .action-buttons.active {
+            display: flex;
+        }
+
+        .action-btn {
+            background: #fda4af;
+            color: white;
+            border: none;
+            padding: 1rem 2rem;
+            font-size: 1.2rem;
+            font-family: 'Monument Extended', monospace;
+            cursor: pointer;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+        }
+
+        .action-btn:hover {
+            background: #fb7185;
+            transform: scale(1.05);
+        }
+
+        .action-btn.save-btn {
+            background: #22c55e;
+        }
+
+        .action-btn.save-btn:hover {
+            background: #16a34a;
+        }
+
+        /* Filter selection */
+        .filter-selection {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(26, 27, 38, 0.95);
+            padding: 2rem;
+            border-radius: 16px;
+            border: 2px solid #fda4af;
+            z-index: 1003;
+            text-align: center;
+            display: none;
+        }
+
+        .filter-selection.active {
+            display: block;
+        }
+
+        .filter-options {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 1rem;
+            margin: 1rem 0;
+        }
+
+        .filter-option {
+            cursor: pointer;
+            padding: 1rem;
+            border: 2px solid #fda4af;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+        }
+
+        .filter-option:hover {
+            background: rgba(253, 164, 175, 0.1);
+        }
+
+        .filter-option.selected {
+            background: #fda4af;
+            color: white;
+        }
+
+        .filter-preview {
+            width: 100px;
+            height: 100px;
+            margin: 0 auto;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        .filter-preview img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .sepia { filter: sepia(100%) brightness(90%); }
+        .vintage { filter: contrast(95%) brightness(95%) saturate(0) sepia(35%) hue-rotate(5deg); }
+        .grayscale { filter: grayscale(100%) contrast(120%); }
+        .polaroid { filter: contrast(108%) brightness(108%) saturate(85%); }
+    </style>
+</head>
+<body>
+    <!-- Stars background -->
+    <div id="stars-container"></div>
+
+    <div class="container">
+        <button class="back-btn" onclick="window.location.href='index.html'">← Kembali</button>
+        <h1 class="title">PHOTOBOX</h1>
+        
+        <div class="camera-frame">
+            <video id="camera-feed" autoplay playsinline></video>
+            <div id="countdown"></div>
+        </div>
+
+        <button class="capture-btn" id="capture-btn">JEPRET FOTO</button>
+    </div>
+
+    <div class="flash"></div>
+
+    <!-- Animasi printer -->
+    <div class="printing-animation" id="printing-animation">
+        <div class="printer"></div>
+        <div class="printing-text">Mencetak foto...</div>
+    </div>
+
+    <div class="polaroid-container" id="polaroid-container">
+        <div class="polaroid-frame frame-1" draggable="true">
+            <img id="photo-1">
+            <p>Frame 1</p>
+        </div>
+        <div class="polaroid-frame frame-2" draggable="true">
+            <img id="photo-2">
+            <p>Frame 2</p>
+        </div>
+        <div class="polaroid-frame frame-3" draggable="true">
+            <img id="photo-3">
+            <p>Frame 3</p>
+        </div>
+        <div class="polaroid-frame frame-4" draggable="true">
+            <img id="photo-4">
+            <p>Frame 4</p>
+        </div>
+    </div>
+
+    <div class="drag-instruction" id="drag-instruction">
+        ↔ Geser foto untuk melihat hasil
+    </div>
+
+    <div class="action-buttons" id="action-buttons">
+        <button class="action-btn save-btn" id="save-btn">💾 Simpan Foto</button>
+        <button class="action-btn" id="back-btn">← Kembali</button>
+    </div>
+
+    <canvas id="photo-canvas" style="display: none;"></canvas>
+
+    <div class="filter-selection" id="filter-selection">
+        <h2 style="color: #fda4af; margin-bottom: 1rem;">Pilih Filter</h2>
+        <div class="filter-options">
+            <div class="filter-option" data-filter="none">
+                <div class="filter-preview">
+                    <img id="preview-none">
+                </div>
+                <p>Normal</p>
+            </div>
+            <div class="filter-option" data-filter="sepia">
+                <div class="filter-preview">
+                    <img id="preview-sepia" class="sepia">
+                </div>
+                <p>Sepia</p>
+            </div>
+            <div class="filter-option" data-filter="vintage">
+                <div class="filter-preview">
+                    <img id="preview-vintage" class="vintage">
+                </div>
+                <p>Vintage</p>
+            </div>
+            <div class="filter-option" data-filter="polaroid">
+                <div class="filter-preview">
+                    <img id="preview-polaroid" class="polaroid">
+                </div>
+                <p>Polaroid</p>
+            </div>
+        </div>
+        <button class="action-btn" id="apply-filter">Terapkan Filter</button>
+    </div>
+
+    <script>
+        // Membuat background bintang
+        const starsContainer = document.getElementById('stars-container');
+        for (let i = 0; i < 100; i++) {
+            const star = document.createElement('div');
+            star.className = 'stars';
+            star.style.left = `${Math.random() * 100}%`;
+            star.style.top = `${Math.random() * 100}%`;
+            star.style.animation = `twinkle ${Math.random() * 3 + 1}s infinite`;
+            starsContainer.appendChild(star);
+        }
+
+        // Mengakses kamera
+        const video = document.getElementById('camera-feed');
+        const captureBtn = document.getElementById('capture-btn');
+        const polaroidContainer = document.getElementById('polaroid-container');
+        const canvas = document.getElementById('photo-canvas');
+        const flash = document.querySelector('.flash');
+        const countdown = document.getElementById('countdown');
+        const dragInstruction = document.getElementById('drag-instruction');
+        let currentFrame = 1;
+
+        async function startCamera() {
+            try {
+                const stream = await navigator.mediaDevices.getUserMedia({ 
+                    video: { 
+                        facingMode: 'user',
+                        width: { ideal: 1280 },
+                        height: { ideal: 720 }
+                    } 
+                });
+                video.srcObject = stream;
+            } catch (err) {
+                console.error('Error:', err);
+                alert('Tidak dapat mengakses kamera. Pastikan kamera tersedia dan izin diberikan.');
+            }
+        }
+
+        function startCountdown() {
+            let count = 3;
+            countdown.style.display = 'block';
+            
+            const countInterval = setInterval(() => {
+                countdown.textContent = count;
+                count--;
+
+                if (count < 0) {
+                    clearInterval(countInterval);
+                    countdown.style.display = 'none';
+                    capturePhoto();
+                }
+            }, 1000);
+        }
+
+        function capturePhoto() {
+            canvas.width = video.videoWidth;
+            canvas.height = video.videoHeight;
+            canvas.getContext('2d').drawImage(video, 0, 0);
+            
+            // Efek flash
+            flash.classList.add('active');
+            setTimeout(() => flash.classList.remove('active'), 500);
+
+            // Tampilkan opsi filter
+            showFilterSelection(canvas.toDataURL('image/png'));
+        }
+
+        function showFilterSelection(photoData) {
+            const filterSelection = document.getElementById('filter-selection');
+            filterSelection.classList.add('active');
+            
+            // Reset event listeners lama
+            const applyFilterBtn = document.getElementById('apply-filter');
+            const newApplyFilterBtn = applyFilterBtn.cloneNode(true);
+            applyFilterBtn.parentNode.replaceChild(newApplyFilterBtn, applyFilterBtn);
+            
+            // Set preview images
+            document.querySelectorAll('.filter-preview img').forEach(img => {
+                img.src = photoData;
+            });
+
+            // Reset dan tambahkan event listeners baru untuk filter options
+            const filterOptions = document.querySelectorAll('.filter-option');
+            filterOptions.forEach(option => {
+                const newOption = option.cloneNode(true);
+                option.parentNode.replaceChild(newOption, option);
+                newOption.addEventListener('click', () => {
+                    filterOptions.forEach(opt => opt.classList.remove('selected'));
+                    newOption.classList.add('selected');
+                });
+            });
+
+            // Handle filter application dengan event listener baru
+            document.getElementById('apply-filter').addEventListener('click', () => {
+                const selectedFilter = document.querySelector('.filter-option.selected');
+                if (!selectedFilter) {
+                    alert('Silakan pilih filter terlebih dahulu');
+                    return;
+                }
+
+                const filterType = selectedFilter.dataset.filter;
+                applyFilterAndSave(photoData, filterType);
+                filterSelection.classList.remove('active');
+            });
+        }
+
+        function applyFilterAndSave(photoData, filterType) {
+            const img = new Image();
+            img.onload = () => {
+                const tempCanvas = document.createElement('canvas');
+                tempCanvas.width = img.width;
+                tempCanvas.height = img.height;
+                const ctx = tempCanvas.getContext('2d');
+
+                // Draw original image
+                ctx.drawImage(img, 0, 0);
+
+                // Apply filter
+                if (filterType !== 'none') {
+                    ctx.filter = getFilterString(filterType);
+                    ctx.drawImage(tempCanvas, 0, 0);
+                }
+
+                // Save to polaroid frame
+                const filteredData = tempCanvas.toDataURL('image/png');
+                document.getElementById(`photo-${currentFrame}`).src = filteredData;
+
+                // Continue with photo process
+                if (currentFrame < 4) {
+                    currentFrame++;
+                    captureBtn.disabled = false;
+                    captureBtn.textContent = `JEPRET FOTO (${currentFrame}/4)`;
+                } else {
+                    captureBtn.disabled = true;
+                    captureBtn.textContent = 'Memproses...';
+                    startPrintingAnimation();
+                }
+            };
+            img.src = photoData;
+        }
+
+        function getFilterString(filterType) {
+            switch (filterType) {
+                case 'sepia':
+                    return 'sepia(100%) brightness(90%)';
+                case 'vintage':
+                    return 'contrast(95%) brightness(95%) saturate(0) sepia(35%) hue-rotate(5deg)';
+                case 'grayscale':
+                    return 'grayscale(100%) contrast(120%)';
+                case 'polaroid':
+                    return 'contrast(108%) brightness(108%) saturate(85%)';
+                default:
+                    return 'none';
+            }
+        }
+
+        function startPrintingAnimation() {
+            const printingAnimation = document.getElementById('printing-animation');
+            printingAnimation.classList.add('active');
+
+            // Simulasi proses cetak
+            setTimeout(() => {
+                printingAnimation.classList.remove('active');
+                showPolaroids();
+            }, 3000);
+        }
+
+        function showPolaroids() {
+            polaroidContainer.classList.add('active');
+            dragInstruction.classList.add('active');
+            document.getElementById('action-buttons').classList.add('active');
+
+            // Animasi munculnya polaroid satu per satu
+            const frames = document.querySelectorAll('.polaroid-frame');
+            frames.forEach((frame, index) => {
+                setTimeout(() => {
+                    frame.classList.add('show');
+                }, index * 500);
+            });
+
+            setupDraggableFrames();
+            captureBtn.style.display = 'none'; // Sembunyikan tombol jepret
+        }
+
+        function setupDraggableFrames() {
+            const frames = document.querySelectorAll('.polaroid-frame');
+            frames.forEach(frame => {
+                frame.addEventListener('mousedown', startDragging);
+                frame.addEventListener('touchstart', startDragging, { passive: false });
+            });
+        }
+
+        function startDragging(e) {
+            e.preventDefault();
+            const frame = e.target.closest('.polaroid-frame');
+            if (!frame) return;
+
+            const isTouch = e.type === 'touchstart';
+            const startX = isTouch ? e.touches[0].clientX : e.clientX;
+            const startY = isTouch ? e.touches[0].clientY : e.clientY;
+            const startLeft = frame.offsetLeft;
+            const startTop = frame.offsetTop;
+
+            function drag(e) {
+                const currentX = isTouch ? e.touches[0].clientX : e.clientX;
+                const currentY = isTouch ? e.touches[0].clientY : e.clientY;
+                
+                const deltaX = currentX - startX;
+                const deltaY = currentY - startY;
+
+                frame.style.left = `${startLeft + deltaX}px`;
+                frame.style.top = `${startTop + deltaY}px`;
+            }
+
+            function stopDragging() {
+                document.removeEventListener(isTouch ? 'touchmove' : 'mousemove', drag);
+                document.removeEventListener(isTouch ? 'touchend' : 'mouseup', stopDragging);
+            }
+
+            document.addEventListener(isTouch ? 'touchmove' : 'mousemove', drag);
+            document.addEventListener(isTouch ? 'touchend' : 'mouseup', stopDragging);
+        }
+
+        captureBtn.addEventListener('click', () => {
+            captureBtn.disabled = true;
+            startCountdown();
+        });
+
+        // Fungsi untuk menyimpan semua foto
+        function saveAllPhotos() {
+            // Cek apakah sudah 4 foto
+            const photos = document.querySelectorAll('.polaroid-frame img');
+            let allPhotosReady = true;
+            
+            photos.forEach(photo => {
+                if (!photo.src || photo.src === window.location.href) {
+                    allPhotosReady = false;
+                }
+            });
+
+            if (!allPhotosReady) {
+                alert('Silakan ambil 4 foto terlebih dahulu');
+                return;
+            }
+
+            const zip = new JSZip();
+            const promises = [];
+
+            // Simpan setiap foto
+            for (let i = 1; i <= 4; i++) {
+                const img = document.getElementById(`photo-${i}`);
+                const promise = fetch(img.src)
+                    .then(response => response.blob())
+                    .then(blob => {
+                        zip.file(`foto-${i}.png`, blob);
+                    });
+                promises.push(promise);
+            }
+
+            // Setelah semua foto ditambahkan ke zip
+            Promise.all(promises).then(() => {
+                zip.generateAsync({type: "blob"}).then(content => {
+                    const link = document.createElement('a');
+                    link.href = URL.createObjectURL(content);
+                    link.download = 'photobox-photos.zip';
+                    link.click();
+                });
+            });
+        }
+
+        // Event listeners untuk tombol aksi
+        document.getElementById('save-btn').addEventListener('click', saveAllPhotos);
+        document.getElementById('back-btn').addEventListener('click', () => {
+            if (currentFrame < 4) {
+                if (!confirm('Foto belum selesai diambil. Yakin ingin kembali?')) {
+                    return;
+                }
+            }
+            window.location.href = 'index.html';
+        });
+
+        // Tambahkan script JSZip
+        const script = document.createElement('script');
+        script.src = 'https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js';
+        document.head.appendChild(script);
+
+        // Mulai kamera saat halaman dimuat
+        startCamera();
+        // Set teks awal tombol
+        captureBtn.textContent = 'JEPRET FOTO (1/4)';
+    </script>
+</body>
+</html> 
